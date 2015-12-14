@@ -5,41 +5,30 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="Pirates">
         <script src="/assets/js/jquery.js"></script>
-        <script src="/assets/js/jsqrcode-combined.min.js"></script>
-        <script src="/assets/js/html5-qrcode.min.js"></script>
+        <script type="text/javascript" src="/assets/js/QRScanJS/qrscan.js"></script>
     </head>
     <body>
         <div style="text-align:center;margin:auto;">
-            <div id="reader" style="width:300px;height:250px;margin:auto;">
-            </div>
+            <video autoplay="true" id="webcam" width=320 style="margin:auto;"></video>
             <p id="scanning">Scanning ...</p>
             <p id="result"></p>
             <p id="appliance"></p>
         </div>
         <script type="text/javascript">
-            $(document).ready(function(){
-                $('#reader').html5_qrcode(
-                    function(data){
-                        // do something when code is read
-                        console.log('Found this: '+data);
-                        $('#scanning').hide();
-                        $('#result').html("");
-                        $('#appliance').html("");
-                        $.post('/api/appliance/get', {'id':data}).done(function(data){
-                            $('#result').html("Application Code: "+data.id);
-                            $('#appliance').html("Application Name: "+data.name);
-                        })
-                    },
-                    function(error){
-                        //show read errors 
-                        console.log('Error: '+error);
-                    }, function(videoError){
-                        //the video stream could be opened
-                        console.log('Video Error: '+videoError);
-                    }
-                );
-                $('#reader').html5_qrcode_stop();
-            });
+            QRReader.init("#webcam", "/assets/js/QRScanJS/");
+            function scan() {
+                QRReader.scan(function (result) {
+                    $('#scanning').hide();
+                    $('#result').html("");
+                    $('#appliance').html("");
+                    $.post('/api/appliance/get', {'id':result}).done(function(data){
+                        $('#result').html("Application Code: "+data.id);
+                        $('#appliance').html("Application Name: "+data.name);
+                    })
+                    setTimeout(scan, 200);
+                });
+            }
+            scan();
         </script>
     </body>
 </html>
